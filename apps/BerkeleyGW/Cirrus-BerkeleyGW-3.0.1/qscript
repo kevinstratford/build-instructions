@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#SBATCH --partition=standard
+#SBATCH --qos=short
+#SBATCH --exclusive
+#SBATCH --time 00:20:00
+
+# Make sure we have "python"
+module load anaconda
+
+export prefix=$(pwd)/install
+export hdf5=${prefix}/hdf5-gnu
+export LD_LIBRARY_PATH=${hdf5}/lib:${LD_LIBRARY_PATH}
+
+# THIS MPT RUNTIME OPTIONS IS REQUIRED
+export MPI_TYPE_DEPTH=31
+
+module load intel-20.4/cmkl
+module load mpt
+module load gcc
+
+# Move to the location of the test suite
+cd BerkeleyGW-3.0.1/testsuite
+
+export TEMPDIRPATH=$(pwd)/tmp
+
+export OMP_NUM_THREADS=1
+
+export BGW_TEST_MPI_NPROCS=2
+export MPIEXEC="$(which srun) --ntasks=2"
+
+make check-save
+
